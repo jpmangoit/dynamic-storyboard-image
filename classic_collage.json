@@ -1,0 +1,15 @@
+{
+    "layout_preset": "layout_C_classic",
+    "customer_name": "Durham University",
+    "assignment": {
+        "hero_left": "towel.png",
+        "hero_right": "bag.png",
+        "accessory_small": "magnet.png",
+        "accessory_tiny": "keyring.png",
+        "support_large": "frame.png",
+        "support_medium": "notebook.png",
+        "support_medium_large": "greeting.png",
+        "cluster_bottom": "mug.png"
+    },
+    "notes": "This assignment replicates your original fixed layout_A using the flexible container system."
+}

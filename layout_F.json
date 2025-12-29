@@ -1,0 +1,14 @@
+{
+    "layout_preset": "layout_F_classic",
+    "customer_name": "Durham University",
+    "assignment": {
+        "hero_left": "towel.png",
+        "hero_right": "bag.png",
+        "accessory_small": "magnet.png",
+        "accessory_tiny": "keyring.png",
+        "support_large": "frame.png",
+        "support_medium": "notebook.png",
+        "support_medium_large": "greeting.png",
+        "cluster_bottom": "mug.png"
+    }
+}
