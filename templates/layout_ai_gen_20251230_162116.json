@@ -1,0 +1,50 @@
+{
+  "description": "AI-generated layout using Gemini 2.0 Flash - 20251230_162116",
+  "containers": [
+    {
+      "id": "hero",
+      "role": "hero",
+      "canvas_x": 177,
+      "canvas_y": 450,
+      "width_px": 1591,
+      "height_px": 2800,
+      "rotation_deg": 0
+    },
+    {
+      "id": "support_medium_large",
+      "role": "support",
+      "canvas_x": 1828,
+      "canvas_y": 450,
+      "width_px": 2956,
+      "height_px": 1375,
+      "rotation_deg": 0
+    },
+    {
+      "id": "cluster",
+      "role": "cluster",
+      "canvas_x": 1828,
+      "canvas_y": 1875,
+      "width_px": 1749,
+      "height_px": 1375,
+      "rotation_deg": 0
+    },
+    {
+      "id": "support_medium",
+      "role": "support",
+      "canvas_x": 3617,
+      "canvas_y": 1875,
+      "width_px": 1167,
+      "height_px": 667,
+      "rotation_deg": 0
+    },
+    {
+      "id": "accessory_small",
+      "role": "accessory",
+      "canvas_x": 3617,
+      "canvas_y": 2582,
+      "width_px": 1167,
+      "height_px": 668,
+      "rotation_deg": 0
+    }
+  ]
+}

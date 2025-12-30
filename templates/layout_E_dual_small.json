@@ -1,0 +1,79 @@
+{
+    "description": "Modified layout_E with two SMALL accessory slots (no tiny)",
+    "containers": [
+        {
+            "id": "hero_left",
+            "role": "hero",
+            "size_class": "xl",
+            "canvas_x": 2330,
+            "canvas_y": 472,
+            "width_px": 2572,
+            "height_px": 1729
+        },
+        {
+            "id": "accessory_small",
+            "role": "accessory",
+            "size_class": "small",
+            "canvas_x": 692,
+            "canvas_y": 1506,
+            "width_px": 669,
+            "height_px": 669,
+            "rotation_deg": -5
+        },
+        {
+            "id": "accessory_small_2",
+            "role": "accessory",
+            "size_class": "small",
+            "canvas_x": 2988,
+            "canvas_y": 2400,
+            "width_px": 669,
+            "height_px": 669,
+            "rotation_deg": 10
+        },
+        {
+            "id": "support_large",
+            "role": "support",
+            "size_class": "large",
+            "canvas_x": 444,
+            "canvas_y": 466,
+            "width_px": 1022,
+            "height_px": 825
+        },
+        {
+            "id": "support_medium_large",
+            "role": "support",
+            "size_class": "medium_large",
+            "canvas_x": 254,
+            "canvas_y": 2306,
+            "width_px": 940,
+            "height_px": 887
+        },
+        {
+            "id": "cluster_bottom",
+            "role": "cluster",
+            "size_class": "mug_cluster",
+            "canvas_x": 3482,
+            "canvas_y": 2418,
+            "width_px": 1329,
+            "height_px": 550
+        },
+        {
+            "id": "hero_right",
+            "role": "hero",
+            "size_class": "xl_tall",
+            "canvas_x": 1220,
+            "canvas_y": 214,
+            "width_px": 1633,
+            "height_px": 2973
+        },
+        {
+            "id": "support_medium",
+            "role": "support",
+            "size_class": "medium",
+            "canvas_x": 78,
+            "canvas_y": 1360,
+            "width_px": 587,
+            "height_px": 904
+        }
+    ]
+}

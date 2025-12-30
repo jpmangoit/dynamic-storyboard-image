@@ -1,14 +1,26 @@
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+"""
+Smart Storyboard Renderer with Enhanced Visual Effects.
+
+This module provides advanced rendering with shadows, rotations, and proper
+product sizing. Fixes the sizing bug by using shared utilities.
+"""
+
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import os
-import random
+
+from engine.image_utils import fit_image_to_box, get_centering_offset
+
 
 def hex_to_rgb(hex_color):
+    """Convert hex color string to RGB tuple."""
     hex_color = hex_color.lstrip('#')
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
-def add_drop_shadow(image, offset=(15, 15), background_color=(255, 255, 255), shadow_color=(0, 0, 0, 100), blur_radius=20):
+
+def add_drop_shadow(image, offset=(15, 15), shadow_color=(0, 0, 0, 100), blur_radius=20):
     """
     Adds a soft drop shadow to an RGBA image.
+    Returns (shadow_image, offset_x, offset_y) for proper positioning.
     """
     total_width = image.width + abs(offset[0]) + 2 * blur_radius
     total_height = image.height + abs(offset[1]) + 2 * blur_radius
@@ -24,40 +36,34 @@ def add_drop_shadow(image, offset=(15, 15), background_color=(255, 255, 255), sh
     # Blur the shadow
     shadow = shadow.filter(ImageFilter.GaussianBlur(blur_radius))
     
-    # Create background layer
-    # For storyboards, we usually just return the shadow + image composite
-    # But since we paste onto a canvas later, we just need the composite of Shadow + Image
-    
     # Composite Image ON TOP of Shadow
     img_left = blur_radius - min(offset[0], 0)
     img_top = blur_radius - min(offset[1], 0)
     
     shadow.paste(image, (img_left, img_top), mask=image)
     
-    # Return the composite and the offset needed to place it correctly
-    # The new image is larger than the original.
-    # Original X/Y was for the top-left of the image.
-    # New X should be X - img_left
     return shadow, img_left, img_top
+
 
 def render_smart_storyboard(config, preset_name, product_mapping, customer_name="Generative Client"):
     """
-    Enhanced renderer with Shadows, Rotations, and Overlaps.
+    Enhanced renderer with shadows, rotations, and CORRECT product sizing.
+    
+    KEY FIX: Products are now properly fitted to container bounds using shared
+    fit_image_to_box() utility, matching generate_collage.py behavior.
     """
     # Canvas
     canvas_cfg = config["canvas"]
     bg_color = hex_to_rgb(canvas_cfg.get("background", "#FFFFFF"))
     canvas = Image.new("RGB", (canvas_cfg["width_px"], canvas_cfg["height_px"]), bg_color)
     
-    # 1. Header (Reusing logic would be ideal, but for isolation we reimplement basic header)
-    # We can import helpers if we really want, but let's keep it self-contained for safety
+    # 1. Header
     if "header" in config:
         h_cfg = config["header"]
         h_area = h_cfg["area"]
-        # Draw placeholder header if image missing
         draw = ImageDraw.Draw(canvas)
         draw.rectangle([(h_area["x"], h_area["y"]), (h_area["x"]+h_area["w"], h_area["y"]+h_area["h"])], fill="#87CEEB")
-        # Try loading image
+        
         if h_cfg.get("type") == "image" and os.path.exists(h_cfg.get("src", "")):
             try:
                 h_img = Image.open(h_cfg["src"]).convert("RGBA")
@@ -65,7 +71,6 @@ def render_smart_storyboard(config, preset_name, product_mapping, customer_name=
                 canvas.paste(h_img, (h_area["x"], h_area["y"]), mask=h_img)
             except: pass
             
-        # Draw Customer Name
         try:
              font = ImageFont.truetype("arial.ttf", 80)
         except:
@@ -73,17 +78,9 @@ def render_smart_storyboard(config, preset_name, product_mapping, customer_name=
         draw.text((h_area["x"] + 50, h_area["y"] + 100), customer_name, fill="white", font=font)
 
     # 2. Render Products
-    # Sort containers by area size? Larger items usually in back? 
-    # Or strict z-index? 
-    # For now, we trust the list order, but let's reverse it so first items (Hero) are at back?
-    # Actually, Layout Generator usually puts Hero first.
-    # If we want overlap, smaller items ( Accessories) should be ON TOP of Heroes.
-    # So we should draw Heroes first, Accessories last.
-    
     containers = config["presets"][preset_name]
     
     # Sort: Heroes first (back), then Supports, then Accessories (front)
-    # We can guess by ID name
     def z_sort(c):
         cid = c["id"]
         if "hero" in cid: return 0
@@ -100,50 +97,32 @@ def render_smart_storyboard(config, preset_name, product_mapping, customer_name=
             continue
             
         try:
-            # Load
+            # Load product image
             img = Image.open(img_path).convert("RGBA")
             
-            # Smart Resize (Fit Inside Box)
-            # Calculate aspect ratios to fit 'contain' style
+            # FIX: Use shared fit_image_to_box utility (same as generate_collage.py)
             target_w, target_h = container["w"], container["h"]
-            img_ratio = img.width / img.height
-            box_ratio = target_w / target_h
-            
-            if img_ratio > box_ratio:
-                # Width constrained
-                new_w = target_w
-                new_h = int(target_w / img_ratio)
-            else:
-                # Height constrained
-                new_h = target_h
-                new_w = int(target_h * img_ratio)
-                
-            img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+            fitted_img = fit_image_to_box(img, target_w, target_h, maintain_aspect=True)
             
             # Rotation
             angle = container.get("rotation_deg", 0)
             if angle != 0:
-                # Note: generate_collage uses negative rotation for PIL compatibility
-                img = img.rotate(-angle, resample=Image.Resampling.BICUBIC, expand=True)
+                fitted_img = fitted_img.rotate(-angle, resample=Image.Resampling.BICUBIC, expand=True)
             
             # Add Drop Shadow
-            img_with_shadow, offset_x, offset_y = add_drop_shadow(img)
+            img_with_shadow, shadow_offset_x, shadow_offset_y = add_drop_shadow(fitted_img)
             
-            # Position Calculation
-            # Center based on the FINAL image size (after rotation)
-            # container["x"] is the top-left of the bounding box
-            center_x = container["x"] + (container["w"] - img.width) // 2
-            center_y = container["y"] + (container["h"] - img.height) // 2
+            # FIX: Center using fitted image size, not shadow-expanded size
+            x_offset, y_offset = get_centering_offset(fitted_img.size, (target_w, target_h))
             
-            # The paste coordinate needs to account for the shadow expansion (offset_x/y)
-            # If offset_x is positive (left padding), we move Left (subtract).
-            final_x = center_x - offset_x
-            final_y = center_y - offset_y
+            # Final position accounts for container, centering, and shadow offsets
+            final_x = container["x"] + x_offset - shadow_offset_x
+            final_y = container["y"] + y_offset - shadow_offset_y
             
             # Paste
             canvas.paste(img_with_shadow, (final_x, final_y), mask=img_with_shadow)
             
-            print(f"   [RENDER] Placed {cid} with shadow/rotation")
+            print(f"   [RENDER] Placed {cid} (fitted: {fitted_img.size})")
             
         except Exception as e:
             print(f"   [ERROR] Failed to render {cid}: {e}")
@@ -152,8 +131,6 @@ def render_smart_storyboard(config, preset_name, product_mapping, customer_name=
     if "footer" in config:
         f_cfg = config["footer"]
         f_area = f_cfg["area"]
-        draw = ImageDraw.Draw(canvas)
-        # draw.rectangle([(f_area["x"], f_area["y"]), (f_area["x"]+f_area["w"], f_area["y"]+f_area["h"])], fill="#EEE")
         if f_cfg.get("type") == "image" and os.path.exists(f_cfg.get("src", "")):
             try:
                 f_img = Image.open(f_cfg["src"]).convert("RGBA")

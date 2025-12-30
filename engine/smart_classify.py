@@ -183,11 +183,14 @@ def scan_directory(directory, model, processor, flexible=False):
             
             if role:
                 # Flexible Mode: Generalize roles to allow random placement
+                # But PRESERVE size suffixes for accessories/supports so Gemini respects sizing
                 if flexible:
-                    if "hero" in role: role = "hero"
-                    elif "support" in role: role = "support"
-                    elif "accessory" in role: role = "accessory"
-                    elif "cluster" in role: role = "cluster"
+                    if "hero" in role:
+                        role = "hero"  # Generalize all heroes to allow flexible placement
+                    elif "cluster" in role:
+                        role = "cluster"  # Generalize clusters
+                    # For supports and accessories, keep the FULL role including size suffix
+                    # This allows Gemini to differentiate accessory_small from accessory_tiny
                 
                 # Handle duplicate roles (prevent overwrite)
                 final_role = role
