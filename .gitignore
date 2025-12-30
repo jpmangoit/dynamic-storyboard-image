@@ -18,7 +18,6 @@ output/
 backup/
 
 # IDE
-.vscode/
 .idea/
 
 # OS generated files

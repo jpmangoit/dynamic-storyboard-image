@@ -336,10 +336,9 @@ def normalize_container(c):
 def map_inventory_to_legacy(inventory, legacy_containers, item_aspects={}):
     """
     Maps dynamic inventory items to fixed legacy slots using a Best-Fit strategy.
-    Prioritizes:
-    1. Exact ID Match
-    2. Role Match
-    3. Aspect Ratio Match (minimizing cropping)
+    
+    Pass 1: Strict Role Match (Hero->Hero, Support->Support, Acc->Acc)
+    Pass 2: Promotion (Accessory -> Support, Support -> Hero) to fill gaps.
     """
     
     # 1. Check constraints: Hero count
@@ -351,65 +350,103 @@ def map_inventory_to_legacy(inventory, legacy_containers, item_aspects={}):
         
     mapped = []
     available_items = list(inventory.keys())
+    used_slots = set() # Track indices of used slots
     
-    # Sort slots to fill: 
-    # 1. Heroes first
-    # 2. Then by area (Largest slots get first pick of best-aspect items)
+    # Sort slots to fill: Heroes first, then by Area
     def sort_prio(c):
         is_hero = 0 if c.get('role') == 'hero' else 1
         area = c.get('width_px', 0) * c.get('height_px', 0)
-        return (is_hero, -area) # Descending area
+        return (is_hero, -area)
         
-    sorted_slots = sorted(legacy_containers, key=sort_prio)
+    sorted_slots_with_idx = sorted(enumerate(legacy_containers), key=lambda x: sort_prio(x[1]))
     
-    for slot in sorted_slots:
+    # -------------------------------------------------------------------------
+    # PASS 1: Strict Matching
+    # -------------------------------------------------------------------------
+    for slot_idx, slot in sorted_slots_with_idx:
+        if slot_idx in used_slots: continue
+        
         slot_role = slot.get('role', 'support')
         slot_id = slot.get('id', 'unknown')
-        
-        # Calculate Slot Aspect Ratio
-        s_w = slot.get('width_px', 100)
-        s_h = slot.get('height_px', 100)
+        s_w, s_h = slot.get('width_px', 100), slot.get('height_px', 100)
         slot_aspect = s_w / s_h
         
         best_item = None
         best_score = -float('inf')
         
         for item_key in available_items:
-            # 1. Strict Role Filter
-            # The item key MUST contain the slot role (e.g. 'hero' in 'hero_2')
+            # STRICT ROLE CHECK
             if slot_role not in item_key:
                 continue
                 
-            # Calculate Score
             score = 0
+            if item_key == slot_id: score += 1000
             
-            # A. Exact ID Match (Overrides everything)
-            if item_key == slot_id:
-                score += 1000
-                
-            # B. Aspect Ratio Match
-            # We use log difference so 0.5 (1:2) and 2.0 (2:1) are equally "far" from 1.0
             if item_key in item_aspects:
-                item_aspect = item_aspects[item_key]
-                # Smaller difference is better. 
-                # We subtract the difference from score.
-                # Weighted factor 50 means a significant aspect deviation matters more than minor role variations
-                diff = abs(math.log(slot_aspect / item_aspect))
+                diff = abs(math.log(slot_aspect / item_aspects[item_key]))
                 score -= (diff * 50)
+                
+            # Tiny/Small Penalty
+            slot_size = slot.get('size_class', '').lower()
+            if 'tiny' in slot_size:
+                if '_small' in item_key or '_medium' in item_key or '_large' in item_key:
+                    score -= 50 # Soft Penalty
             
             if score > best_score:
                 best_score = score
                 best_item = item_key
             
         if best_item:
-            # Create a new container instance for this item
             c = normalize_container(slot)
-            c['id'] = best_item # The inventory key
+            c['id'] = best_item
             mapped.append(c)
             available_items.remove(best_item)
+            used_slots.add(slot_idx)
+
+    # -------------------------------------------------------------------------
+    # PASS 2: Role Gap Filling (Promotion)
+    # -------------------------------------------------------------------------
+    if available_items:
+        for slot_idx, slot in sorted_slots_with_idx:
+            if slot_idx in used_slots: continue
             
-    # If we have items left over, this template might not be ideal, but we return what we mapped.
-    # For heroes, we already checked strict count, so heroes are safe.
+            slot_role = slot.get('role', 'support')
+            # Only allow promotion TO Support or Hero slots
+            if slot_role not in ['support', 'hero']: continue
+            
+            # Logic: Can an Accessory fill a Support slot? YES.
+            # Can a Support fill a Hero slot? NO (Heroes are strict).
+            
+            best_item = None
+            best_score = -float('inf')
+            
+            for item_key in available_items:
+                # RELAXED CHECK: Allow Accessories in Support Slots
+                is_accessory = 'accessory' in item_key
+                if slot_role == 'support' and is_accessory:
+                    # Allow! But with a base penalty so it's a fallback
+                    score = -500 
+                else:
+                    continue # Strict no for other mismatches
+                
+                # Aspect Ratio still matters!
+                s_w, s_h = slot.get('width_px', 100), slot.get('height_px', 100)
+                slot_aspect = s_w / s_h
+                if item_key in item_aspects:
+                     diff = abs(math.log(slot_aspect / item_aspects[item_key]))
+                     score -= (diff * 50)
+                
+                if score > best_score:
+                    best_score = score
+                    best_item = item_key
+            
+            if best_item:
+                c = normalize_container(slot)
+                c['id'] = best_item
+                mapped.append(c)
+                available_items.remove(best_item)
+                used_slots.add(slot_idx)
+
     return mapped
 
 def get_valid_templates(config, inventory, item_aspects={}):
