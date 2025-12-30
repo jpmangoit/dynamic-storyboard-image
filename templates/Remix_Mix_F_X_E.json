@@ -1,0 +1,84 @@
+{
+    "presets": {
+        "Remix_Mix_F_X_E": {
+            "description": "Hybrid of layout_F_classic (Left) and layout_E_classic (Right)",
+            "containers": [
+                {
+                    "id": "accessory_small",
+                    "role": "accessory",
+                    "size_class": "small",
+                    "canvas_x": 74,
+                    "canvas_y": 1470,
+                    "width_px": 669,
+                    "height_px": 669,
+                    "rotation_deg": -5
+                },
+                {
+                    "id": "accessory_tiny",
+                    "role": "accessory",
+                    "size_class": "tiny",
+                    "canvas_x": 816,
+                    "canvas_y": 1594,
+                    "width_px": 396,
+                    "height_px": 210,
+                    "rotation_deg": 10
+                },
+                {
+                    "id": "support_medium_large",
+                    "role": "support",
+                    "size_class": "medium_large",
+                    "canvas_x": 62,
+                    "canvas_y": 2240,
+                    "width_px": 940,
+                    "height_px": 887
+                },
+                {
+                    "id": "cluster_bottom",
+                    "role": "cluster",
+                    "size_class": "mug_cluster",
+                    "canvas_x": 8,
+                    "canvas_y": 812,
+                    "width_px": 1329,
+                    "height_px": 550
+                },
+                {
+                    "id": "support_medium",
+                    "role": "support",
+                    "size_class": "medium",
+                    "canvas_x": 1306,
+                    "canvas_y": 2238,
+                    "width_px": 587,
+                    "height_px": 904
+                },
+                {
+                    "id": "hero_left",
+                    "role": "hero",
+                    "size_class": "xl",
+                    "canvas_x": 2330,
+                    "canvas_y": 472,
+                    "width_px": 2572,
+                    "height_px": 1729
+                },
+                {
+                    "id": "accessory_tiny",
+                    "role": "accessory",
+                    "size_class": "tiny",
+                    "canvas_x": 2988,
+                    "canvas_y": 2612,
+                    "width_px": 396,
+                    "height_px": 210,
+                    "rotation_deg": 10
+                },
+                {
+                    "id": "cluster_bottom",
+                    "role": "cluster",
+                    "size_class": "mug_cluster",
+                    "canvas_x": 3482,
+                    "canvas_y": 2418,
+                    "width_px": 1329,
+                    "height_px": 550
+                }
+            ]
+        }
+    }
+}

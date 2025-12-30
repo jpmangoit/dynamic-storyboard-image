@@ -1,4 +1,5 @@
 {
+    "description": "Exact visual replica of original fixed layout_A - dual heroes, top accessories, bottom cluster",
     "containers": [
         {
             "id": "hero_left",

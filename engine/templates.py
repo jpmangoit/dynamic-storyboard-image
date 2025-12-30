@@ -11,34 +11,25 @@ import glob
 # ==============================================================================
 # 1. FIXED LAYOUTS (Legacy JSON + External)
 # ==============================================================================
-def load_legacy_layouts(json_path):
-    """Loads fixed layouts from the existing JSON file."""
+def load_legacy_layouts(templates_dir="templates"):
+    """Loads fixed layouts from JSON files in the templates directory."""
     presets = {}
     
-    # 1. Load Main Layout File
-    try:
-        if os.path.exists(json_path):
-            with open(json_path, 'r') as f:
-                data = json.load(f)
-                presets.update(data.get("presets", {}))
-    except Exception as e:
-        print(f"[WARN] Failed to load main layout: {e}")
-
-    # 2. Load External Templates (templates/*.json)
-    # This allows user to add new layouts without code changes.
-    ext_files = glob.glob("templates/*.json")
+    # Load External Templates (templates/*.json)
+    ext_files = glob.glob(os.path.join(templates_dir, "*.json"))
     for ext in ext_files:
         try:
             with open(ext, 'r') as f:
                 data = json.load(f)
-                # Supports structure: {"containers": [...]} OR {"presets": {...}}
-                if "containers" in data:
-                    # Single layout file
-                    name = os.path.basename(ext).replace(".json", "")
-                    presets[f"ext_{name}"] = data
-                elif "presets" in data:
-                    # Collection file
+                
+                # Check for "presets" key (collection) or "containers" key (single layout)
+                if "presets" in data:
                     presets.update(data["presets"])
+                elif "containers" in data:
+                    # Use filename as layout name if not a collection
+                    name = os.path.basename(ext).replace(".json", "")
+                    presets[name] = data
+                    
         except Exception as e:
             print(f"[WARN] Failed to load external template {ext}: {e}")
             
@@ -342,77 +333,83 @@ def normalize_container(c):
     # Our inventory has DYNAMIC roles.
     return new_c
 
-def map_inventory_to_legacy(inventory, legacy_containers):
+def map_inventory_to_legacy(inventory, legacy_containers, item_aspects={}):
     """
-    Tries to map the dynamic inventory items to the slots in a fixed legacy layout.
-    Returns list of mapped containers OR None if not a good fit.
+    Maps dynamic inventory items to fixed legacy slots using a Best-Fit strategy.
+    Prioritizes:
+    1. Exact ID Match
+    2. Role Match
+    3. Aspect Ratio Match (minimizing cropping)
     """
-    # 1. Check constraints
-    # If legacy template has N 'hero' slots, and inventory has M 'hero' items:
-    # We should only use this template if N >= M.
-    # Otherwise, M-N heroes will be forced into small slots.
     
-    template_hero_slots = [c for c in legacy_containers if c.get('role') == 'hero']
-    inventory_heroes = [k for k in inventory.keys() if 'hero' in k]
-    
-    # 1. Check constraints
-    # STRICT: Hero Count must match EXACTLY.
-    # If template has 2 hero slots and we only have 1 hero, the result is an unbalanced layout with a giant hole.
-    # It is better to skip this template and let the Dynamic Generators (Single Hero) handle it.
-    
+    # 1. Check constraints: Hero count
     template_hero_slots = [c for c in legacy_containers if c.get('role') == 'hero']
     inventory_heroes = [k for k in inventory.keys() if 'hero' in k]
     
     if len(template_hero_slots) != len(inventory_heroes):
-        # Allow slight flexibility? 
-        # No, for "Client Presentable" results, empty hero slots are unacceptable.
         return None
         
     mapped = []
-    used_items = set()
-    
-    # Work on a copy of inventory keys
     available_items = list(inventory.keys())
     
-    # Prioritize HEROES first
-    # Sort slots so 'hero' roles come first
-    
+    # Sort slots to fill: 
+    # 1. Heroes first
+    # 2. Then by area (Largest slots get first pick of best-aspect items)
     def sort_prio(c):
-        return 0 if c.get('role') == 'hero' else 1
+        is_hero = 0 if c.get('role') == 'hero' else 1
+        area = c.get('width_px', 0) * c.get('height_px', 0)
+        return (is_hero, -area) # Descending area
         
     sorted_slots = sorted(legacy_containers, key=sort_prio)
     
     for slot in sorted_slots:
-        slot_role = slot.get('role', 'support') # expect 'hero', 'accessory', etc.
+        slot_role = slot.get('role', 'support')
         slot_id = slot.get('id', 'unknown')
         
-        # Find best match in inventory
-        best_match = None
+        # Calculate Slot Aspect Ratio
+        s_w = slot.get('width_px', 100)
+        s_h = slot.get('height_px', 100)
+        slot_aspect = s_w / s_h
         
-        # exact match?
-        if slot_id in available_items:
-            best_match = slot_id
-        # role match?
-        elif any(k for k in available_items if slot_role in k):
-            best_match = next(k for k in available_items if slot_role in k)
-        # fallback: any item
-        elif available_items:
-            best_match = available_items[0]
+        best_item = None
+        best_score = -float('inf')
+        
+        for item_key in available_items:
+            # 1. Strict Role Filter
+            # The item key MUST contain the slot role (e.g. 'hero' in 'hero_2')
+            if slot_role not in item_key:
+                continue
+                
+            # Calculate Score
+            score = 0
             
-        if best_match:
+            # A. Exact ID Match (Overrides everything)
+            if item_key == slot_id:
+                score += 1000
+                
+            # B. Aspect Ratio Match
+            # We use log difference so 0.5 (1:2) and 2.0 (2:1) are equally "far" from 1.0
+            if item_key in item_aspects:
+                item_aspect = item_aspects[item_key]
+                # Smaller difference is better. 
+                # We subtract the difference from score.
+                # Weighted factor 50 means a significant aspect deviation matters more than minor role variations
+                diff = abs(math.log(slot_aspect / item_aspect))
+                score -= (diff * 50)
+            
+            if score > best_score:
+                best_score = score
+                best_item = item_key
+            
+        if best_item:
             # Create a new container instance for this item
             c = normalize_container(slot)
-            c['id'] = best_match # The inventory key
+            c['id'] = best_item # The inventory key
             mapped.append(c)
-            available_items.remove(best_match)
+            available_items.remove(best_item)
             
-    # Include unmapped items? Or ignore?
-    # For legacy layouts, we can't easily add new slots. So unmapped items are lost.
-    # This is a downside of fixed layouts.
-    if available_items:
-        # If we have items left over, this template might not be ideal
-        pass 
-        
+    # If we have items left over, this template might not be ideal, but we return what we mapped.
+    # For heroes, we already checked strict count, so heroes are safe.
     return mapped
 
 def get_valid_templates(config, inventory, item_aspects={}):
@@ -439,9 +436,9 @@ def get_valid_templates(config, inventory, item_aspects={}):
             })
             
     # B. Check Legacy JSON
-    legacy_presets = load_legacy_layouts("a3_storyboard_layout.json")
+    legacy_presets = load_legacy_layouts()
     for name, preset in legacy_presets.items():
-        mapped = map_inventory_to_legacy(inventory, preset.get("containers", []))
+        mapped = map_inventory_to_legacy(inventory, preset.get("containers", []), item_aspects)
         if mapped:
             valid_options.append({
                 "name": f"Legacy_{name}",

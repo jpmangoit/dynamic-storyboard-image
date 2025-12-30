@@ -11,10 +11,32 @@ import sys
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 
+import glob
+
 def load_config(config_path="a3_storyboard_master.json"):
-    """Load JSON configuration file."""
+    """Load JSON configuration file and templates."""
     with open(config_path, 'r') as f:
-        return json.load(f)
+        config = json.load(f)
+        
+    # Ensure presets key exists
+    if "presets" not in config:
+        config["presets"] = {}
+        
+    # Load templates from templates/ directory
+    template_files = glob.glob(os.path.join("templates", "*.json"))
+    for t_file in template_files:
+        try:
+            with open(t_file, 'r') as f:
+                t_data = json.load(f)
+                if "presets" in t_data:
+                    config["presets"].update(t_data["presets"])
+                elif "containers" in t_data:
+                    name = os.path.basename(t_file).replace(".json", "")
+                    config["presets"][name] = t_data
+        except Exception as e:
+            print(f"[WARN] Failed to load template {t_file}: {e}")
+            
+    return config
 
 def hex_to_rgb(hex_color):
     """Convert hex color to RGB tuple."""

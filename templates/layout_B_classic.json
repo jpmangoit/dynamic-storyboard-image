@@ -1,4 +1,5 @@
 {
+    "description": "Visual replica of layout_B",
     "containers": [
         {
             "id": "hero_left",

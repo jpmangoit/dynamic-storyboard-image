@@ -592,13 +592,32 @@ def main():
     arg1 = sys.argv[1]
     
     # Load layout configuration
-    config_file = "a3_storyboard_layout.json"
+    config_file = "a3_storyboard_master.json"
     if not os.path.exists(config_file):
         print(f"[ERROR] Layout configuration file '{config_file}' not found.")
         sys.exit(1)
 
     with open(config_file, 'r') as f:
         config = json.load(f)
+        
+    # Ensure presets key exists
+    if "presets" not in config:
+        config["presets"] = {}
+        
+    # Load templates from templates/ directory
+    import glob
+    template_files = glob.glob(os.path.join("templates", "*.json"))
+    for t_file in template_files:
+        try:
+            with open(t_file, 'r') as f:
+                t_data = json.load(f)
+                if "presets" in t_data:
+                    config["presets"].update(t_data["presets"])
+                elif "containers" in t_data:
+                    name = os.path.basename(t_file).replace(".json", "")
+                    config["presets"][name] = t_data
+        except Exception as e:
+            print(f"[WARN] Failed to load template {t_file}: {e}")
 
     # Determine mode
     if arg1 == "--generate":
@@ -619,7 +638,7 @@ def main():
             
         # 2. Dynamic Layout Calculation
         print("[2] Procedural Layout Generation...")
-        from layout_generator import generate_dynamic_layout
+        from engine.layout_generator import generate_dynamic_layout
         
         # Use canvas config from layout file
         w = config['canvas']['width_px']

@@ -66,358 +66,43 @@
                 "color": "#444444",
                 "x": 3500,
                 "y": 3380,
-                "text": "Design © Cornflower Ltd. All images on this board. Do not reproduce."
+                "text": "Design \u00a9 Cornflower Ltd. All images on this board. Do not reproduce."
             }
         ]
     },
-    "presets": {
-        "layout_A": [
-            {
-                "id": "tea_towel",
-                "x": 1042,
-                "y": 498,
-                "w": 1729,
-                "h": 2572
-            },
-            {
-                "id": "mug_set",
-                "x": 36,
-                "y": 2866,
-                "w": 1329,
-                "h": 550
-            },
-            {
-                "id": "magnet",
-                "x": 3768,
-                "y": 342,
-                "w": 669,
-                "h": 669
-            },
-            {
-                "id": "keyring",
-                "x": 4638,
-                "y": 432,
-                "w": 210,
-                "h": 396
-            },
-            {
-                "id": "bag",
-                "x": 2488,
-                "y": 334,
-                "w": 1633,
-                "h": 2973
-            },
-            {
-                "id": "mounted_print",
-                "x": 140,
-                "y": 1286,
-                "w": 825,
-                "h": 1022
-            },
-            {
-                "id": "book",
-                "x": 4242,
-                "y": 1204,
-                "w": 587,
-                "h": 904
-            },
-            {
-                "id": "greeting_card",
-                "x": 3970,
-                "y": 2286,
-                "w": 887,
-                "h": 940
-            }
-        ],
-        "layout_B": [
-            {
-                "id": "tea_towel",
-                "x": 2894,
-                "y": 464,
-                "w": 1729,
-                "h": 2572
-            },
-            {
-                "id": "mug_set",
-                "x": 1346,
-                "y": 2814,
-                "w": 1329,
-                "h": 550
-            },
-            {
-                "id": "magnet",
-                "x": 1556,
-                "y": 1948,
-                "w": 669,
-                "h": 669
-            },
-            {
-                "id": "keyring",
-                "x": 2304,
-                "y": 2006,
-                "w": 210,
-                "h": 396
-            },
-            {
-                "id": "bag",
-                "x": 20,
-                "y": 350,
-                "w": 1633,
-                "h": 2973
-            },
-            {
-                "id": "mounted_print",
-                "x": 1688,
-                "y": 726,
-                "w": 825,
-                "h": 1022
-            },
-            {
-                "id": "book",
-                "x": 4324,
-                "y": 2342,
-                "w": 587,
-                "h": 904
-            },
-            {
-                "id": "greeting_card",
-                "x": 2372,
-                "y": 2478,
-                "w": 887,
-                "h": 940
-            }
-        ],
-        "layout_C": [
-            {
-                "id": "tea_towel",
-                "x": 66,
-                "y": 496,
-                "w": 1729,
-                "h": 2572
-            },
-            {
-                "id": "mug_set",
-                "x": 1878,
-                "y": 2756,
-                "w": 1329,
-                "h": 550
-            },
-            {
-                "id": "magnet",
-                "x": 1844,
-                "y": 692,
-                "w": 669,
-                "h": 669
-            },
-            {
-                "id": "keyring",
-                "x": 2414,
-                "y": 1132,
-                "w": 210,
-                "h": 396
-            },
-            {
-                "id": "bag",
-                "x": 3238,
-                "y": 318,
-                "w": 1633,
-                "h": 2973
-            },
-            {
-                "id": "mounted_print",
-                "x": 2768,
-                "y": 516,
-                "w": 825,
-                "h": 1022
-            },
-            {
-                "id": "book",
-                "x": 1860,
-                "y": 1752,
-                "w": 587,
-                "h": 904
-            },
-            {
-                "id": "greeting_card",
-                "x": 2380,
-                "y": 1738,
-                "w": 887,
-                "h": 940
-            }
-        ],
-        "layout_D": [
-            {
-                "id": "tea_towel",
-                "x": 48,
-                "y": 438,
-                "w": 2572,
-                "h": 1729
-            },
-            {
-                "id": "magnet",
-                "x": 2674,
-                "y": 1452,
-                "w": 669,
-                "h": 669
-            },
-            {
-                "id": "keyring",
-                "x": 2766,
-                "y": 1386,
-                "w": 396,
-                "h": 210
-            },
-            {
-                "id": "mounted_print",
-                "x": 2656,
-                "y": 440,
-                "w": 1022,
-                "h": 825
-            },
-            {
-                "id": "greeting_card",
-                "x": 124,
-                "y": 2338,
-                "w": 940,
-                "h": 887
-            },
-            {
-                "id": "mug_set",
-                "x": 1218,
-                "y": 2524,
-                "w": 1329,
-                "h": 550
-            },
-            {
-                "id": "bag",
-                "x": 3302,
-                "y": 264,
-                "w": 1633,
-                "h": 2973
-            },
-            {
-                "id": "book",
-                "x": 2660,
-                "y": 2310,
-                "w": 587,
-                "h": 904
-            }
-        ],
-        "layout_E": [
-            {
-                "id": "tea_towel",
-                "x": 2330,
-                "y": 472,
-                "w": 2572,
-                "h": 1729
-            },
-            {
-                "id": "magnet",
-                "x": 692,
-                "y": 1506,
-                "w": 669,
-                "h": 669
-            },
-            {
-                "id": "keyring",
-                "x": 2988,
-                "y": 2612,
-                "w": 396,
-                "h": 210
-            },
-            {
-                "id": "mounted_print",
-                "x": 444,
-                "y": 466,
-                "w": 1022,
-                "h": 825
-            },
-            {
-                "id": "greeting_card",
-                "x": 254,
-                "y": 2306,
-                "w": 940,
-                "h": 887
-            },
-            {
-                "id": "mug_set",
-                "x": 3482,
-                "y": 2418,
-                "w": 1329,
-                "h": 550
-            },
-            {
-                "id": "bag",
-                "x": 1220,
-                "y": 214,
-                "w": 1633,
-                "h": 2973
-            },
-            {
-                "id": "book",
-                "x": 78,
-                "y": 1360,
-                "w": 587,
-                "h": 904
-            }
-        ],
-        "layout_F": [
-            {
-                "id": "tea_towel",
-                "x": 1292,
-                "y": 342,
-                "w": 2572,
-                "h": 1729
-            },
-            {
-                "id": "magnet",
-                "x": 74,
-                "y": 1470,
-                "w": 669,
-                "h": 669
-            },
-            {
-                "id": "keyring",
-                "x": 816,
-                "y": 1594,
-                "w": 396,
-                "h": 210
-            },
-            {
-                "id": "mounted_print",
-                "x": 2082,
-                "y": 2326,
-                "w": 1022,
-                "h": 825
-            },
-            {
-                "id": "greeting_card",
-                "x": 62,
-                "y": 2240,
-                "w": 940,
-                "h": 887
-            },
-            {
-                "id": "mug_set",
-                "x": 8,
-                "y": 812,
-                "w": 1329,
-                "h": 550
-            },
-            {
-                "id": "bag",
-                "x": 3312,
-                "y": 226,
-                "w": 1633,
-                "h": 2973
-            },
-            {
-                "id": "book",
-                "x": 1306,
-                "y": 2238,
-                "w": 587,
-                "h": 904
-            }
-        ]
-    }
+    "size_classes": {
+        "xl": {
+            "max_width_percent": 35,
+            "max_height_percent": 88
+        },
+        "xl_tall": {
+            "max_width_percent": 33,
+            "max_height_percent": 102
+        },
+        "large": {
+            "max_width_percent": 17,
+            "max_height_percent": 35
+        },
+        "medium_large": {
+            "max_width_percent": 18,
+            "max_height_percent": 32
+        },
+        "medium": {
+            "max_width_percent": 12,
+            "max_height_percent": 31
+        },
+        "small": {
+            "fixed_width_px": 669,
+            "fixed_height_px": 669
+        },
+        "tiny": {
+            "fixed_width_px": 210,
+            "fixed_height_px": 396
+        },
+        "mug_cluster": {
+            "max_width_percent": 27,
+            "fixed_height_px": 550
+        }
+    },
+    "presets": {}
 }

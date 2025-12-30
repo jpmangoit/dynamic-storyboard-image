@@ -137,7 +137,9 @@ def get_manual_role(filename, manifest):
 
     return None, None
 
-def scan_directory(directory, model, processor):
+import random
+
+def scan_directory(directory, model, processor, flexible=False):
     """Scan a directory and build an inventory."""
     inventory = {}
     
@@ -158,7 +160,17 @@ def scan_directory(directory, model, processor):
         except Exception as e:
             print(f"[WARN] Failed to load manifest: {e}", file=sys.stderr)
 
-    for filename in os.listdir(directory):
+    # Get file list
+    files = os.listdir(directory)
+    
+    # Randomize order if flexible mode is on to allow varied placement
+    if flexible:
+        random.shuffle(files)
+        print("[AI] Flexible mode: Randomizing processing order.", file=sys.stderr)
+    else:
+        files.sort() # Deterministic order for default mode
+
+    for filename in files:
         if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
             path = os.path.join(directory, filename)
             
@@ -170,6 +182,13 @@ def scan_directory(directory, model, processor):
                  role, conf, reason = classify_image(path, model, processor)
             
             if role:
+                # Flexible Mode: Generalize roles to allow random placement
+                if flexible:
+                    if "hero" in role: role = "hero"
+                    elif "support" in role: role = "support"
+                    elif "accessory" in role: role = "accessory"
+                    elif "cluster" in role: role = "cluster"
+                
                 # Handle duplicate roles (prevent overwrite)
                 final_role = role
                 counter = 2
@@ -179,6 +198,10 @@ def scan_directory(directory, model, processor):
                 
                 print(f"  > {filename} -> {final_role} [Base: {role}, {reason}]", file=sys.stderr)
                 inventory[final_role] = path
+            else:
+                print(f"  [SKIP] {filename} - No role determined.", file=sys.stderr)
+        else:
+            print(f"  [IGNORE] {filename}", file=sys.stderr)
             
     return inventory
 

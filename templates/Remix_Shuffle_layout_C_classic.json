@@ -1,0 +1,83 @@
+{
+    "presets": {
+        "Remix_Shuffle_layout_C_classic": {
+            "description": "Shuffled role positions of layout_C_classic",
+            "containers": [
+                {
+                    "id": "hero_left",
+                    "role": "hero",
+                    "size_class": "xl",
+                    "canvas_x": 66,
+                    "canvas_y": 496,
+                    "width_px": 1729,
+                    "height_px": 2572
+                },
+                {
+                    "id": "cluster_bottom",
+                    "role": "cluster",
+                    "size_class": "mug_cluster",
+                    "canvas_x": 1878,
+                    "canvas_y": 2756,
+                    "width_px": 1329,
+                    "height_px": 550
+                },
+                {
+                    "id": "accessory_small",
+                    "role": "accessory",
+                    "size_class": "small",
+                    "canvas_x": 2414,
+                    "canvas_y": 1132,
+                    "width_px": 210,
+                    "height_px": 396,
+                    "rotation_deg": 10
+                },
+                {
+                    "id": "accessory_tiny",
+                    "role": "accessory",
+                    "size_class": "tiny",
+                    "canvas_x": 1844,
+                    "canvas_y": 692,
+                    "width_px": 669,
+                    "height_px": 669,
+                    "rotation_deg": -5
+                },
+                {
+                    "id": "hero_right",
+                    "role": "hero",
+                    "size_class": "xl_tall",
+                    "canvas_x": 3238,
+                    "canvas_y": 318,
+                    "width_px": 1633,
+                    "height_px": 2973
+                },
+                {
+                    "id": "support_large",
+                    "role": "support",
+                    "size_class": "large",
+                    "canvas_x": 2380,
+                    "canvas_y": 1738,
+                    "width_px": 887,
+                    "height_px": 940
+                },
+                {
+                    "id": "support_medium",
+                    "role": "support",
+                    "size_class": "medium",
+                    "canvas_x": 2768,
+                    "canvas_y": 516,
+                    "width_px": 825,
+                    "height_px": 1022
+                },
+                {
+                    "id": "support_medium_large",
+                    "role": "support",
+                    "size_class": "medium_large",
+                    "canvas_x": 1860,
+                    "canvas_y": 1752,
+                    "width_px": 587,
+                    "height_px": 904
+                }
+            ]
+        }
+    }
+}

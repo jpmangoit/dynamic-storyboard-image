@@ -1,0 +1,103 @@
+{
+    "presets": {
+        "Remix_Mix_F_X_D": {
+            "description": "Hybrid of layout_F_classic (Left) and layout_D_classic (Right)",
+            "containers": [
+                {
+                    "id": "accessory_small",
+                    "role": "accessory",
+                    "size_class": "small",
+                    "canvas_x": 74,
+                    "canvas_y": 1470,
+                    "width_px": 669,
+                    "height_px": 669,
+                    "rotation_deg": -5
+                },
+                {
+                    "id": "accessory_tiny",
+                    "role": "accessory",
+                    "size_class": "tiny",
+                    "canvas_x": 816,
+                    "canvas_y": 1594,
+                    "width_px": 396,
+                    "height_px": 210,
+                    "rotation_deg": 10
+                },
+                {
+                    "id": "support_medium_large",
+                    "role": "support",
+                    "size_class": "medium_large",
+                    "canvas_x": 62,
+                    "canvas_y": 2240,
+                    "width_px": 940,
+                    "height_px": 887
+                },
+                {
+                    "id": "cluster_bottom",
+                    "role": "cluster",
+                    "size_class": "mug_cluster",
+                    "canvas_x": 8,
+                    "canvas_y": 812,
+                    "width_px": 1329,
+                    "height_px": 550
+                },
+                {
+                    "id": "support_medium",
+                    "role": "support",
+                    "size_class": "medium",
+                    "canvas_x": 1306,
+                    "canvas_y": 2238,
+                    "width_px": 587,
+                    "height_px": 904
+                },
+                {
+                    "id": "accessory_small",
+                    "role": "accessory",
+                    "size_class": "small",
+                    "canvas_x": 2674,
+                    "canvas_y": 1452,
+                    "width_px": 669,
+                    "height_px": 669,
+                    "rotation_deg": -5
+                },
+                {
+                    "id": "accessory_tiny",
+                    "role": "accessory",
+                    "size_class": "tiny",
+                    "canvas_x": 2766,
+                    "canvas_y": 1386,
+                    "width_px": 396,
+                    "height_px": 210,
+                    "rotation_deg": 10
+                },
+                {
+                    "id": "support_large",
+                    "role": "support",
+                    "size_class": "large",
+                    "canvas_x": 2656,
+                    "canvas_y": 440,
+                    "width_px": 1022,
+                    "height_px": 825
+                },
+                {
+                    "id": "hero_right",
+                    "role": "hero",
+                    "size_class": "xl_tall",
+                    "canvas_x": 3302,
+                    "canvas_y": 264,
+                    "width_px": 1633,
+                    "height_px": 2973
+                },
+                {
+                    "id": "support_medium",
+                    "role": "support",
+                    "size_class": "medium",
+                    "canvas_x": 2660,
+                    "canvas_y": 2310,
+                    "width_px": 587,
+                    "height_px": 904
+                }
+            ]
+        }
+    }
+}

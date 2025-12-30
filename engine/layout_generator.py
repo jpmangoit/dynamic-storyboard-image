@@ -1,27 +1,5 @@
 import math
 import random
-
-def get_safe_area(config):
-    """Extract safe area from config."""
-    canvas = config["canvas"]
-    margin = canvas.get("safe_margin_px", 150)
-    w = canvas["width_px"]
-    h = canvas["height_px"]
-    
-    # Account for Header/Footer if they exist
-    header_h = config.get("header", {}).get("area", {}).get("h", 0)
-    footer_h = config.get("footer", {}).get("area", {}).get("h", 0)
-    
-    return {
-        "x": margin,
-        "y": margin + header_h,
-        "w": w - (margin * 2),
-        "h": h - (margin * 2) - header_h - footer_h,
-        "full_w": w,
-        "full_h": h
-    }
-
-import random
 from PIL import Image
 from engine import templates
 import os
