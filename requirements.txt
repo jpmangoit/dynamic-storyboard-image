@@ -1,0 +1,13 @@
+# Core Image Processing
+Pillow>=10.0.0
+
+# AI Classification (CLIP Model)
+transformers>=4.30.0
+torch>=2.0.0
+
+# Generative AI (Gemini Layouts)
+google-genai>=0.2.0
+python-dotenv>=1.0.0
+
+# Optional / Development
+# torchvision  # Usually installed with torch, but good to be explicit if needed
