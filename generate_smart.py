@@ -213,6 +213,38 @@ def main():
         print(f"\n[ERROR] Rendering failed: {e}")
         import traceback
         traceback.print_exc()
+        
+    # 5. Post-Generation Validation (Manifest Check)
+    # Warn user if manifest items ended up in unexpected slots
+    # Load Manifest
+    manifest = {}
+    if os.path.exists("products/manifest.json"):
+        try:
+           with open("products/manifest.json", 'r') as f:
+               manifest = json.load(f)
+        except: pass
+        
+    if manifest:
+        print("\n[5] Validating Manifest Compliance...")
+        config_containers = config["presets"][preset_name]
+        
+        for filename, expected_role_base in manifest.items():
+            # Find which container this file went to
+            actual_role = None
+            for role, path in inventory.items():
+                if os.path.basename(path) == filename:
+                    actual_role = role
+                    break
+            
+            if actual_role:
+                # Get Container Size Class
+                container = next((c for c in config_containers if c["id"] == actual_role), None)
+                if container and "size_class" in container:
+                    actual_size = container["size_class"]
+                    
+                    # Heuristic Check: "small" item in "tiny" slot?
+                    if "tiny" in actual_size.lower() and "small" in expected_role_base.lower():
+                         print(f"   [WARN] Size Mismatch: '{filename}' (Expected: {expected_role_base}) -> Placed in TINY slot '{actual_size}'")
 
 if __name__ == "__main__":
     main()
