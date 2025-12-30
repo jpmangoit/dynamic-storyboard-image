@@ -10,6 +10,7 @@ venv/
 pip-log.txt
 pip-delete-this-directory.txt
 
+temp_auto_push.bat
 # Environment Variables
 .env
 
@@ -18,9 +19,11 @@ output/
 backup/
 
 # IDE
-.vscode/
 .idea/
 
 # OS generated files
 .DS_Store
 Thumbs.db
+.gitignore
+temp_interactive_push.bat
+branch_structure.json

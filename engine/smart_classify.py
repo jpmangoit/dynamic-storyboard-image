@@ -39,6 +39,38 @@ def classify_image(image_path, model, processor):
     try:
         image = Image.open(image_path)
         
+        # 0. Filename Hinting (Zero-Config Manifest)
+        # Check if filename contains keywords from labels to guide the AI
+        filename_base = os.path.basename(image_path).lower()
+        filename_hint_idx = -1
+        
+        for idx, label in enumerate(LABELS):
+            label_words = label.split()
+            for word in label_words:
+                if len(word) > 2 and word in filename_base:
+                    filename_hint_idx = idx
+                    break
+            if filename_hint_idx != -1:
+                break
+        
+        # HARD OVERRIDE: If Filename matches a label, trust it implicitly
+        if filename_hint_idx != -1:
+            forced_label = LABELS[filename_hint_idx]
+            role = None
+            
+            # Canonical Mapping for Hints
+            if forced_label == "tea towel": role = "hero_left"
+            elif forced_label == "tote bag": role = "hero_right" 
+            elif forced_label == "frame": role = "support_large"
+            elif forced_label == "greeting card": role = "support_medium_large" # Targeted Fix!
+            elif forced_label == "notebook": role = "support_medium"
+            elif forced_label == "mug": role = "cluster_bottom"
+            elif forced_label == "magnet": role = "accessory_small"
+            elif forced_label == "keyring": role = "accessory_tiny"
+            
+            if role:
+                 return role, 1.0, f"Filename says '{forced_label}'"
+
         # 1. AI Classification
         inputs = processor(text=LABELS, images=image, return_tensors="pt", padding=True)
         outputs = model(**inputs)
