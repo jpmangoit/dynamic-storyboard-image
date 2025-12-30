@@ -82,21 +82,68 @@ def main():
         print("[AI] Using Generative Layout Brain (Gemini)...")
         from engine.layout_brain import LayoutBrain
         from engine.layout_solver import LayoutSolver
+        from engine.layout_validator import LayoutValidator
+        
+        # Initialize validator
+        validator = LayoutValidator(
+            canvas_width=config["content_area"]["w"],
+            canvas_height=config["content_area"]["h"]
+        )
         
         # 1. Ask the Brain
         brain = LayoutBrain(config)
         layout_tree = brain.generate_layout_strategy(inventory)
-        print(f"[AI] Strategy Generated: {json.dumps(layout_tree, indent=2)}")
+        print(f"[AI] Strategy Generated:")
+        print(json.dumps(layout_tree, indent=2))
         
-        # 2. Solve the Layout
-        solver = LayoutSolver(width=config["content_area"]["w"], height=config["content_area"]["h"], margin=0) # Margin handled by content_area offset
-        containers = solver.solve(layout_tree, inventory)
+        # 2. Validate Layout Tree Structure
+        print("\n[AI] Validating layout tree...")
+        is_valid, errors, warnings = validator.validate_layout_tree(layout_tree, inventory)
         
-        # Offset to content area
-        for c in containers:
-            c["x"] += config["content_area"]["x"]
-            c["y"] += config["content_area"]["y"]
+        if not is_valid:
+            print("[!] [VALIDATION FAILED] Layout tree has critical errors:")
+            for error in errors:
+                print(f"   [X] {error}")
+            print("\n[AI] Falling back to algorithmic layout due to validation failure...")
+            # Use fallback strategy
+            containers = layout_generator.generate_dynamic_layout(config, inventory, preferred_template)
+        else:
+            if warnings:
+                print("[!] [VALIDATION WARNINGS]:")
+                for warning in warnings:
+                    print(f"   - {warning}")
+            else:
+                print("[OK] Layout tree validation passed!")
             
+            # 3. Solve the Layout
+            print("\n[AI] Solving layout geometry...")
+            solver = LayoutSolver(width=config["content_area"]["w"], height=config["content_area"]["h"], margin=0)
+            containers = solver.solve(layout_tree, inventory)
+            
+            # Offset to content area
+            for c in containers:
+                c["x"] += config["content_area"]["x"]
+                c["y"] += config["content_area"]["y"]
+            
+            # 4. Validate Container Sizes
+            print("\n[AI] Validating container sizes...")
+            is_valid_containers, container_errors, container_warnings = validator.validate_containers(containers, inventory)
+            
+            if container_errors:
+                print("[!] [SIZE VALIDATION ERRORS]:")
+                for error in container_errors:
+                    print(f"   [X] {error}")
+            
+            if container_warnings:
+                print("[!] [SIZE WARNINGS]:")
+                for warning in container_warnings:
+                    print(f"   - {warning}")
+            
+            if not is_valid_containers:
+                print("\n[!] Layout has size constraint violations. Consider regenerating or using custom template.")
+            else:
+                print("[OK] Container size validation passed!")
+        
         # Save this generated layout as a template for inspection
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         template_name = f"layout_ai_gen_{timestamp}"
@@ -104,9 +151,35 @@ def main():
         
         try:
             os.makedirs("templates", exist_ok=True)
+            
+            # Format for template system compatibility
+            template_data = {
+                "description": f"AI-generated layout using Gemini 2.0 Flash - {timestamp}",
+                "containers": []
+            }
+            
+            # Convert containers to template format
+            for c in containers:
+                # Template format uses canvas_x, canvas_y, width_px, height_px
+                template_container = {
+                    "id": c["id"],
+                    "role": c["id"].split('_')[0],  # Extract role from id (e.g., 'hero' from 'hero_2')
+                    "canvas_x": c["x"],
+                    "canvas_y": c["y"],
+                    "width_px": c["w"],
+                    "height_px": c["h"]
+                }
+                
+                # Add rotation if present
+                if "rotation_deg" in c:
+                    template_container["rotation_deg"] = c["rotation_deg"]
+                
+                template_data["containers"].append(template_container)
+            
             with open(template_path, "w") as f:
-                json.dump(containers, f, indent=2)
-            print(f"[AI] Saved generated layout to: {template_path}")
+                json.dump(template_data, f, indent=2)
+            print(f"[AI] Saved reusable template to: {template_path}")
+            print(f"[AI] Reuse with: --template {template_name}")
         except Exception as e:
             print(f"[WARN] Failed to save layout template: {e}")
             

@@ -86,6 +86,17 @@ class LayoutSolver:
         # Basic validation
         if not item_id: return
         
+        # Size validation and warnings
+        min_recommended_size = 400
+        if area["w"] < min_recommended_size or area["h"] < min_recommended_size:
+            print(f"[!] [LAYOUT WARNING] Slot '{item_id}' is very small: {area['w']}x{area['h']}px (recommended min: {min_recommended_size}px)")
+        
+        # Check for hero products that are too small
+        if "hero" in item_id.lower():
+            min_hero_width = 1400  # ~30% of 4607px content area width
+            if area["w"] < min_hero_width:
+                print(f"[!] [CRITICAL] Hero product '{item_id}' width {area['w']}px is below minimum {min_hero_width}px (should be 30-40% of canvas)")
+        
         # Create container
         container = {
             "id": item_id,

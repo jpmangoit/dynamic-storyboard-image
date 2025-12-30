@@ -1,0 +1,71 @@
+{
+  "description": "AI-generated layout using Gemini 2.0 Flash - 20251230_143531",
+  "containers": [
+    {
+      "id": "hero_2",
+      "role": "hero",
+      "canvas_x": 3238,
+      "canvas_y": 318,
+      "width_px": 1633,
+      "height_px": 2973
+    },
+    {
+      "id": "hero",
+      "role": "hero",
+      "canvas_x": 66,
+      "canvas_y": 496,
+      "width_px": 1729,
+      "height_px": 2572
+    },
+    {
+      "id": "support",
+      "role": "support",
+      "canvas_x": 2768,
+      "canvas_y": 516,
+      "width_px": 825,
+      "height_px": 1022
+    },
+    {
+      "id": "support_2",
+      "role": "support",
+      "canvas_x": 2380,
+      "canvas_y": 1738,
+      "width_px": 887,
+      "height_px": 940
+    },
+    {
+      "id": "cluster",
+      "role": "cluster",
+      "canvas_x": 1878,
+      "canvas_y": 2756,
+      "width_px": 1329,
+      "height_px": 550
+    },
+    {
+      "id": "support_3",
+      "role": "support",
+      "canvas_x": 1860,
+      "canvas_y": 1752,
+      "width_px": 587,
+      "height_px": 904
+    },
+    {
+      "id": "accessory_2",
+      "role": "accessory",
+      "canvas_x": 1844,
+      "canvas_y": 692,
+      "width_px": 669,
+      "height_px": 669,
+      "rotation_deg": -5
+    },
+    {
+      "id": "accessory",
+      "role": "accessory",
+      "canvas_x": 2414,
+      "canvas_y": 1132,
+      "width_px": 210,
+      "height_px": 396,
+      "rotation_deg": 10
+    }
+  ]
+}

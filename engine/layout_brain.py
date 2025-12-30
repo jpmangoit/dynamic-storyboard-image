@@ -75,86 +75,251 @@ class LayoutBrain:
             
         inventory_text = "\n".join(items_desc)
         
-        # 2. Strategy Injection
+        # 2. Create Size Mapping Dictionary
+        size_mapping = {}
+        for role in inventory.keys():
+            role_base = role.split('_')[0].lower()
+            if "hero" in role_base:
+                size_mapping[role] = {
+                    "min_width_pct": 30,
+                    "max_width_pct": 40,
+                    "size_class": "xl",
+                    "description": f"{role} must occupy 30-40% of canvas width in a dedicated 'slot' node, NEVER in a grid"
+                }
+            elif "support" in role_base:
+                if "large" in role.lower():
+                    size_mapping[role] = {
+                        "min_width_pct": 15,
+                        "max_width_pct": 20,
+                        "size_class": "large",
+                        "description": f"{role} should occupy 15-20% of canvas width"
+                    }
+                else:
+                    size_mapping[role] = {
+                        "min_width_pct": 10,
+                        "max_width_pct": 15,
+                        "size_class": "medium",
+                        "description": f"{role} should occupy 10-15% of canvas width"
+                    }
+            elif "cluster" in role_base:
+                size_mapping[role] = {
+                    "min_width_pct": 20,
+                    "max_width_pct": 30,
+                    "size_class": "large",
+                    "description": f"{role} is a cluster group, needs 20-30% width"
+                }
+            else:  # accessories, small items
+                size_mapping[role] = {
+                    "min_width_pct": 8,
+                    "max_width_pct": 12,
+                    "size_class": "small",
+                    "description": f"{role} is a small item, 8-12% width is acceptable"
+                }
+        
+        # Format size mapping for prompt
+        size_mapping_text = "\n".join([
+            f"   • {role}: {info['description']} (size_class: {info['size_class']})"
+            for role, info in size_mapping.items()
+        ])
+        
+        # Generate strategic directive based on hero count
         strategy_hint = ""
         if len(hero_items) >= 2:
             strategy_hint = f"""
-        *** DUAL HERO STRATEGY ACTIVE ***
-        Detected {len(hero_items)} HERO items: {hero_items}.
-        These items Combined require ~60-70% of the canvas width (based on 'xl' size class).
-        
-        RECOMMENDED STRUCTURES (Choose one):
-        A) "Bookends": Split Horizontal (Ratio 0.35) -> First=Hero1, Second=Split Horizontal (Ratio 0.5) -> First=Accessories Grid, Second=Hero2.
-        B) "Major Split": Split Horizontal (Ratio 0.55) -> First=Hero1, Second=Split Vertical -> First=Hero2, Second=Accessories.
-        
-        DO NOT stack two heroes vertically in a thin column. They need WIDTH.
-        """
-        elif len(hero_items) == 1:
-             strategy_hint = f"""
-        *** SINGLE HERO STRATEGY ACTIVE ***
-        Detected 1 HERO item: {hero_items}.
-        This item needs a dedicated 'xl' slot (approx 35-40% width).
-        Place it on the Left or Right edge using a vertical split.
-        """
+*** DUAL HERO STRATEGY ***
+You have {len(hero_items)} HERO products: {hero_items}
 
-        # 3. Construct Prompt
+[!] CRITICAL SIZE REQUIREMENT: EACH hero must INDEPENDENTLY occupy 30-40% of TOTAL canvas width.
+    This means after ALL nested splits, calculate the final width percentage - it must be 30%+.
+
+CALCULATING WIDTH PERCENTAGES:
+- If hero_1 is in first of horizontal split (ratio 0.35), it gets 35% width ✓
+- If hero_2 is nested: parent gets 65%, then vertical split 40%, then horizontal 50%
+  → hero_2 gets 0.65 × 0.40 × 0.50 = 13% width ✗ TOO SMALL!
+
+RECOMMENDED APPROACHES (ensures EACH hero gets 30%+ width):
+
+A) "Bookends Layout" (PREFERRED for dual heroes):
+   ```
+   Split Horizontal (ratio: 0.35)
+   ├─ First: Hero 1 (gets 35% width) ✓
+   └─ Second (65% remaining)
+       └─ Split Horizontal (ratio: 0.54)  
+           ├─ First: Grid of accessories (gets 35% of total)
+           └─ Second: Hero 2 (gets 30% width) ✓
+   ```
+
+B) "Side-by-Side Layout":
+   ```
+   Split Horizontal (ratio: 0.4)
+   ├─ First: Hero 1 (gets 40% width) ✓
+   └─ Second (60% remaining)
+       └─ Split Horizontal (ratio: 0.5)
+           ├─ First: Hero 2 (gets 30% width) ✓
+           └─ Second: Accessories stack
+   ```
+
+[!] DO NOT nest heroes more than ONE level deep in splits, or they will become too small!
+"""
+        elif len(hero_items) == 1:
+            strategy_hint = f"""
+*** SINGLE HERO STRATEGY ***
+You have 1 HERO product: {hero_items[0]}
+
+This hero requires 35-40% of canvas width in a DEDICATED 'slot' node.
+
+RECOMMENDED APPROACH:
+- Split Horizontal (ratio: 0.35-0.4) -> First = Hero, Second = Grid/Stack of other products
+- Place hero on LEFT or RIGHT edge for maximum impact
+"""
+        
         item_count = len(inventory)
         item_ids_str = ", ".join([f"'{k}'" for k in inventory.keys()])
         
         prompt = f"""
-        You are an expert Art Director for a high-end fashion/merchandise brand. 
-        Your goal is to design a DYNAMIC, HIGH-DENSITY A3 storyboard layout.
-        CANVAS CONTENT AREA: Width {canvas_w} px, Height {canvas_h} px.
-        
-        BRAND SIZE CLASSES (Reference for scaling):
-        {size_classes_desc}
-        
-        INPUT INVENTORY ({item_count} ITEMS TOTAL):
-        {inventory_text}
-        
-        STRATEGIC DIRECTIVE:
-        {strategy_hint}
-        
-        TASK:
-        Generate a 'Layout Tree' JSON structure to arrange ALL {item_count} items into a cohesive, magazine-quality composition.
-        
-        CRITICAL DESIGN RULES:
-        1. **MUST USE ALL ITEMS**: You have {item_count} items: [{item_ids_str}]. The output JSON must contain exactly {item_count} 'slot' nodes. Double check this.
-        2. **MAXIMIZE COVERAGE**: Do NOT leave large empty spaces. The items should fill the canvas visually.
-        3. **HERO PROMINENCE**: 
-           - **SINGLE HERO**: Must occupy 40-50% of canvas (ideally Left or Right half).
-           - **DUAL HEROES**: You MUST split the main canvas (e.g. 50/50 or 60/40 Horizontal) to give BOTH heroes large, 'xl' equivalent slots. Do NOT put heroes in small grids.
-        4. **TIGHT GRIDS**: Group 'accessory' and 'support' items into tight grids or clusters.
-        5. **HOMOGENEOUS GRIDS**: Do NOT mix Portrait and Landscape items in the same 'grid'. The solver creates identical cells, so mixed shapes will cause whitespace. Use 'split' to separate different shapes.
-        6. **ASPECT RATIO AWARENESS**: 
-           - Match the container shape to the image aspect ratio.
-           - Portrait images (Aspect < 0.8) -> Vertical splits.
-           - Landscape images (Aspect > 1.2) -> Horizontal splits.
-        7. **NO TINY SLIVERS**: Avoid split ratios less than 0.25 or greater than 0.75 unless it is for a sidebar.
-        
-        STRUCTURE DEFINITION:
-        - "split": {{ "type": "split", "direction": "horizontal", "ratio": 0.5, "first": {{ ... }}, "second": {{ ... }} }}
-        - "grid": {{ "type": "grid", "columns": 2, "items": ["id1", "id2"] }}
-        - "slot": {{ "type": "slot", "item_id": "id1" }}
-        
-        OUTPUT FORMAT:
-        Return ONLY the raw JSON object.
-        
-        EXAMPLE OUTPUT:
-        {{
-            "type": "split",
-            "direction": "horizontal",
-            "ratio": 0.6,
+You are an expert Art Director for a PREMIUM EDITORIAL BRAND creating magazine-quality storyboards.
+
+CANVAS CONTENT AREA: {canvas_w}px wide × {canvas_h}px tall
+
+═══════════════════════════════════════════════════════════════════
+CRITICAL REQUIREMENT: PRODUCT SIZE HIERARCHY
+═══════════════════════════════════════════════════════════════════
+
+You have {item_count} products to arrange: [{item_ids_str}]
+
+**MANDATORY SIZE ALLOCATIONS** (based on role):
+{size_mapping_text}
+
+[!] **ABSOLUTE RULE**: Hero products MUST be in DEDICATED 'slot' nodes occupying 30-40% canvas width.
+   NEVER put a hero product in a 'grid'! Grids create equal-sized cells which will make heroes too small.
+
+BRAND SIZE CLASSES (from professional design system):
+{size_classes_desc}
+
+═══════════════════════════════════════════════════════════════════
+STRATEGIC GUIDANCE
+═══════════════════════════════════════════════════════════════════
+
+{strategy_hint}
+
+═══════════════════════════════════════════════════════════════════
+LAYOUT STRUCTURE GRAMMAR
+═══════════════════════════════════════════════════════════════════
+
+**split**: Divides space into two regions (first/second)
+  - direction: "horizontal" (left/right) or "vertical" (top/bottom)
+  - ratio: 0.0-1.0 (percentage of FIRST region, e.g. 0.35 = first gets 35%)
+  - gap: spacing in pixels between regions (default: 40-60px)
+
+**grid**: Creates equal-sized cells for multiple items
+  - columns: number of columns
+  - items: array of item_ids
+  - gap: spacing between cells
+  [!] WARNING: Grids create EQUAL-SIZED cells. Only use for items of similar importance!
+
+**slot**: Single product placement
+  - item_id: the product identifier
+
+═══════════════════════════════════════════════════════════════════
+FEW-SHOT EXAMPLES OF EXCELLENT LAYOUTS
+═══════════════════════════════════════════════════════════════════
+
+**EXAMPLE 1: Dual Hero Balanced Layout**
+// Scenario: 2 Heroes + 4 Medium/Small products
+{{
+    "type": "split",
+    "direction": "horizontal",
+    "ratio": 0.35,
+    "gap": 50,
+    "first": {{
+        "type": "slot",
+        "item_id": "hero_left"  // Gets 35% width - PROMINENT!
+    }},
+    "second": {{
+        "type": "split",
+        "direction": "horizontal",
+        "ratio": 0.6,
+        "gap": 50,
+        "first": {{
+            "type": "grid",
+            "columns": 2,
             "gap": 40,
-            "first": {{ "type": "slot", "item_id": "hero_1" }},
-            "second": {{
-                "type": "grid",
-                "columns": 1,
-                "gap": 40,
-                "items": ["support_1", "support_2"]
-            }}
+            "items": ["support_large", "support_medium", "accessory_small", "accessory_tiny"]
+        }},
+        "second": {{
+            "type": "slot",
+            "item_id": "hero_right"  // Gets ~30% width - PROMINENT!
         }}
-        """
+    }}
+}}
+
+**EXAMPLE 2: Single Hero with Support Stack**
+// Scenario: 1 Hero + 3 Support items of varying sizes
+{{
+    "type": "split",
+    "direction": "horizontal",
+    "ratio": 0.4,
+    "gap": 60,
+    "first": {{
+        "type": "slot",
+        "item_id": "hero_main"  // Gets 40% width - DOMINANT!
+    }},
+    "second": {{
+        "type": "split",
+        "direction": "vertical",
+        "ratio": 0.5,
+        "gap": 50,
+        "first": {{
+            "type": "slot",
+            "item_id": "support_large"  // Top half of remaining space
+        }},
+        "second": {{
+            "type": "grid",
+            "columns": 2,
+            "gap": 40,
+            "items": ["support_medium", "accessory_small"]  // Bottom half split
+        }}
+    }}
+}}
+
+═══════════════════════════════════════════════════════════════════
+YOUR TASK
+═══════════════════════════════════════════════════════════════════
+
+Generate a Layout Tree JSON for ALL {item_count} products: [{item_ids_str}]
+
+**DESIGN PRINCIPLES:**
+1. [+] **PREMIUM SPACING**: This is editorial design, not a catalog. Allow generous whitespace.
+2. [+] **VISUAL HIERARCHY**: Hero products (30-40% width) should DOMINATE the composition.
+3. [+] **INCLUDE EVERY PRODUCT**: The JSON must contain ALL {item_count} items. Missing products = CRITICAL FAILURE.
+4. [+] **DEDICATED HERO SLOTS**: Heroes MUST be in 'slot' nodes with 30-40% width allocation via split ratios.
+5. [+] **SMART GROUPING**: Only grid items of similar size/importance. Don't mix heroes with accessories!
+6. [+] **ASPECT RATIO MATCHING**: 
+   - Portrait items (aspect < 0.8) -> use vertical splits or vertical-oriented grids
+   - Landscape items (aspect > 1.2) -> use horizontal splits
+7. [+] **BALANCED SPLITS**: Avoid extreme ratios like 0.1 or 0.9 unless intentional (sidebar effect)
+
+**ANTI-PATTERNS TO AVOID:**
+[-] Putting hero products in grids
+[-] Making all products the same size
+[-] Extreme cramming to "fit everything"
+[-] Skipping or omitting any products
+[-] Using tiny slivers (ratio < 0.2 or > 0.8) without design reason
+
+═══════════════════════════════════════════════════════════════════
+OUTPUT FORMAT
+═══════════════════════════════════════════════════════════════════
+
+Return ONLY the raw JSON object. No markdown, no explanations.
+
+VALIDATION CHECKLIST (before returning):
+[ ] Count all 'slot' nodes and 'grid' items = {item_count} total?
+[ ] All hero products in dedicated 'slot' nodes (not grids)?
+[ ] Hero slots allocated 30-40% width via parent split ratio?
+[ ] No extreme split ratios (< 0.2 or > 0.8) without good reason?
+
+BEGIN YOUR LAYOUT TREE JSON NOW:
+"""
         
         try:
             response = self.client.models.generate_content(
